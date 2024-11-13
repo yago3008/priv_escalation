@@ -25,7 +25,6 @@ environ = [
     b'exploit',
     b'PATH=GCONV_PATH=.',
     b'LC_MESSAGES=en_US.UTF-8',
-    b'XAUTHORITY=../exploitedWithLove',
     None
 ]
 
